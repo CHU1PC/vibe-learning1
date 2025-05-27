@@ -1,0 +1,50 @@
+---
+description: coding rule 
+globs: src/**
+alwaysApply: false
+---
+# Coding Style
+
+## Scope
+- All code in the `src/**` directory
+
+## Basic Rules
+- Follow the repository's coding style and conventions
+- Adhere to the official or de facto standard style guides for the language/framework in use (e.g., TypeScript: Airbnb/Google/official, etc.)
+- Use consistent indentation (2 or 4 spaces as per project), spacing, and naming conventions throughout the codebase
+
+## Naming Conventions
+- Variables/functions: camelCase
+- Classes/types: PascalCase
+- Constants: UPPER_SNAKE_CASE
+- Filenames: kebab-case or as per project standard
+
+## Code Structure
+- Organize files and directories logically by feature or responsibility. Avoid large, monolithic files
+- Each function/class/module should have a single, clear responsibility (SRP: Single Responsibility Principle)
+- Write small, reusable, and testable functions. Avoid long functions (>40 lines) unless justified
+- Use clear and descriptive variable, function, and class names. Avoid abbreviations unless widely accepted
+
+## Code Readability
+- Write code that is easy to read and understand, even for those unfamiliar with the project
+- Avoid using complex, ambiguous, or overly generic code patterns that may confuse AI agents or human readers
+- Use comments to explain complex logic, algorithms, or non-obvious decisions
+- Use JSDoc (or equivalent) for documenting functions, parameters, and return values
+- Use context comments, TODO, and FIXME tags to help AI agents and reviewers understand intent and pending work
+
+## Documentation and Testing
+- Document all public APIs, exported functions, and classes with JSDoc (or equivalent) comments
+- Write and maintain automated tests for all critical logic. Target at least 80% test coverage unless otherwise specified
+- Use static analysis, linters, and code formatters (e.g., ESLint, Prettier) to enforce style and catch errors. Integrate these tools into CI/CD pipelines
+
+## Design Principles
+- Follow the Readable Code principles to ensure that the code is easy to read and understand
+- Follow the DRY (Don't Repeat Yourself) principle to avoid code duplication
+- Follow the KISS (Keep It Simple, Stupid) principle to keep the code simple and straightforward
+- Follow the YAGNI (You Aren't Gonna Need It) principle to avoid adding unnecessary features or complexity
+- Follow the SOLID principles to ensure that the code is well-structured and maintainable
+
+## Quality and Security
+- Consider security, performance, and accessibility in all code. Avoid known anti-patterns and vulnerabilities
+- All code changes must be peer-reviewed. Use a checklist for PR reviews (naming, logic, tests, docs, security, etc.)
+- Document all significant changes and decisions in the codebase or in a CHANGELOG

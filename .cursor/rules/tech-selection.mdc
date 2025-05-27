@@ -1,0 +1,59 @@
+---
+description: for tech-selection 
+globs: docs/details/technology-selection.md
+alwaysApply: false
+---
+# Technology Selection Rules
+
+## Scope
+- Technology selection documents in the `docs/details/technology-selection.md` file
+
+## Basic Rules
+- When selecting technologies, refer to the PRD for requirements and consider developer experience (DX) in technology choices.
+
+## Technology Selection Criteria
+- Prioritize technologies that are:
+  1. Easy to learn and develop
+  2. Easy to maintain
+  3. Have strong community support
+  4. Have good documentation
+  5. Have active development
+
+## Default Technology Stack
+- For web applications:
+  - Frontend: React + Next.js
+  - Backend: Node.js/Express or Ruby on Rails
+  - Database: PostgreSQL
+  - Authentication: Auth0 or Firebase Auth
+
+- For mobile applications:
+  - React Native or Flutter
+  - Firebase for backend services
+  - SQLite for local storage
+
+## Documentation Requirements
+- Clearly document the rationale for each technology choice
+- Include alternatives considered and why they were not selected
+- Provide detailed setup instructions for selected technologies
+
+## Additional Considerations
+- Consider OSS licenses and their implications
+- Evaluate long-term viability and maintainability
+- Assess security implications
+- Consider scalability and performance requirements
+- Document any potential risks or limitations
+
+## Other Domains
+- For other domains, select standard and widely adopted technologies (e.g., Node.js, Express, Python, FastAPI, MySQL, PostgreSQL, GitHub Actions, etc.).
+
+## Technology Selection Considerations
+- Consider OSS licenses, commercial usage restrictions, long-term viability, and maintainability in all decisions.
+- Document technology selection changes and additions in the changelog and have them reviewed by stakeholders.
+- Evaluate the impact of each technology choice on security, scalability, and performance.
+- Prioritize solutions that enable rapid prototyping, easy onboarding, and minimize vendor lock-in.
+
+## Cloud Infrastructure
+- Prioritize managed services (Vercel, Netlify, Firebase Hosting, etc.) unless self-hosting is required in the PRD.
+
+## Accessibility and Internationalization
+- Consider accessibility and internationalization if relevant to the project.

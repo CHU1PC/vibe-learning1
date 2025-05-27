@@ -1,0 +1,60 @@
+---
+description: for learning-path 
+globs: learning-path/**
+alwaysApply: false
+---
+# Learning Curriculum Generation Rules
+
+## Scope
+- All files in the `learning-path/**` directory
+
+## Basic Rules
+- When instructed to "create a learning curriculum", create a learning path for understanding the technical stack and development procedures needed for the current project, and save it in the file `learning-path/Learning Curriculum.md`.
+
+## Pre-Curriculum Creation Process
+1. Refer to the technical documentation in the `docs/` folder to grasp the project requirements and the technical stack.
+2. Check the implementation status in the `src/` folder (if it exists).
+3. Understand the overall picture of the project and the development plan.
+
+## Curriculum Structure
+1. Learning items divided into five levels (from basic knowledge → application → practice).
+2. Each item should include learning objectives, learning methods, and practical assignments.
+3. Provide an estimated learning period for each item.
+
+## Required Curriculum Elements
+1. In each learning item, include a suggestion to "utilize TechTrain courses."
+   - When suggesting the use of TechTrain courses, utilize the following course list:
+     - HTML/CSS/JavaScript Introductory Course
+     - HTML/CSS/JavaScript Basic Course
+     - React Beginner Course
+     - React Fundamental Course
+     - Laravel Introductory Course
+     - Laravel-PHP Beginner Course
+     - PHP Fundamental Course
+     - Ruby Introductory Course
+     - Ruby on Rails Beginner Course
+     - Ruby on Rails Fundamental Course
+     - Go Beginner Course
+     - Go Fundamental Course
+     - Java Introductory Course
+     - Java Beginner Course
+     - Python Backend Beginner Course (FastAPI)
+     - iOS-Swift Beginner Course
+     - iOS-Swift Fundamental Course
+     - Android-Kotlin Beginner Course
+     - Android-Kotlin Fundamental Course
+     - Git Introductory Course
+     - SQL Introductory Course
+     - Python Introductory Course for Data Analysis
+     - Python Introductory Course for Automation
+     - Product Development Practical Course
+
+2. Depending on the technical difficulty, include advice such as "consult with a TechTrain mentor."
+
+3. The structure should involve basic language and framework learning through courses, and use mentors for guidance on design and decision-making.
+
+## Curriculum Tone
+- The tone of the curriculum should emphasize encouragement and practicality, using expressions that are accessible even for beginners.
+
+## Curriculum Scope
+- The curriculum should only include technical learning content, and should not include items related to domain knowledge from the PRD.
