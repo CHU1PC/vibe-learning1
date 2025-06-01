@@ -20,7 +20,20 @@ import cv2
 import insightface
 import numpy as np
 import streamlit as st
+from pydub import AudioSegment
 from transformers import pipeline
+
+
+# --- ここに追加 ---
+@st.cache_resource
+def get_asr_pipe():
+    return pipeline("automatic-speech-recognition", model="openai/whisper-small")
+
+
+@st.cache_resource
+def get_chatbot_pipe():
+    return pipeline("text-generation", model="meta-llama/Llama-3.1-8B-Instruct")
+
 
 REGISTER_PATH = r"D:\program\programming\app\detect_techtrain\registered_faces.pkl"
 AUTH_PATH = r"D:\program\programming\app\detect_techtrain\authenticated_user.txt"
@@ -82,7 +95,7 @@ def load_authenticated_user():
 
 
 # --- 音声認識パイプライン ---
-asr_pipe = pipeline("automatic-speech-recognition", model="openai/whisper-small")
+asr_pipe = get_asr_pipe()
 
 # --- Streamlit UI ---
 st.title("AI統合Webアプリ")
@@ -167,7 +180,7 @@ user, score = load_authenticated_user()
 if user and score >= 0.8:
     st.success(f"認証成功: {user}（スコア: {score:.2f}）")
     st.header("音声→テキスト変換")
-    audio_file = st.file_uploader("音声ファイルをアップロードしてください", type=["wav", "mp3"])
+    audio_file = st.file_uploader("音声ファイルをアップロードしてください", type=["wav", "mp3", "m4a"])  # m4aを追加
     if audio_file:
         with open("temp_audio.wav", "wb") as f:
             f.write(audio_file.read())
@@ -187,25 +200,42 @@ if user and score >= 0.8:
                     out_wf.setsampwidth(sampwidth)
                     out_wf.setframerate(framerate)
                     out_wf.writeframes(frames)
-        if audio_file.name.lower().endswith('.wav'):
+
+        # --- ここを修正 ---
+        ext = audio_file.name.lower().split('.')[-1]
+        if ext == 'wav':
             cut_wav("temp_audio.wav", "temp_audio_cut.wav", max_sec=60)
+            audio_path = "temp_audio_cut.wav"
+        elif ext == 'm4a':
+            # M4A→WAV変換
+            audio = AudioSegment.from_file("temp_audio.wav", format="m4a")
+            audio.export("temp_audio_converted.wav", format="wav")
+            cut_wav("temp_audio_converted.wav", "temp_audio_cut.wav", max_sec=60)
             audio_path = "temp_audio_cut.wav"
         else:
             audio_path = "temp_audio.wav"
+        # --- ここまで修正 ---
+
         result = asr_pipe(audio_path, return_timestamps=True)
         text = result["text"]
         st.write("音声認識結果:", text)
 
         # --- ここからchatbotに入力 ---
         # チャットボット用パイプライン
-        chatbot_pipe = pipeline("text-generation", model="meta-llama/Llama-3.1-8B-Instruct")
+        chatbot_pipe = get_chatbot_pipe()
         messages = [
             {"role": "user", "content": text},
         ]
-        chat_result = chatbot_pipe(messages)
+        # max_new_tokensを増やす（例: 256や512など必要に応じて調整）
+        chat_result = chatbot_pipe(
+            messages,
+            max_new_tokens=512,   # ここを追加
+            do_sample=True,       # サンプリング有効化（任意）
+            temperature=0.7       # 生成の多様性（任意）
+        )
         # アシスタントの返答だけ表示
         for msg in chat_result[0]["generated_text"]:
-            if msg["role"] == "assistant":
+            if msg["role"] == "assistant":  
                 st.write("チャットボットの返答:", msg["content"])
         atexit.register(reset_authenticated_user)
 else:
