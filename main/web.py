@@ -6,37 +6,41 @@ import warnings
 import wave
 
 warnings.filterwarnings("ignore")
-import os
+import os  # noqa
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
-import logging
+import logging  # noqa
 
 logging.getLogger("streamlit").setLevel(logging.ERROR)
 logging.getLogger("torch").setLevel(logging.ERROR)
-import cv2
-import insightface
-import numpy as np
-import streamlit as st
-from pydub import AudioSegment
-from transformers import pipeline
+import cv2  # noqa
+import insightface  # noqa
+import numpy as np  # noqa
+import streamlit as st  # noqa
+from pydub import AudioSegment  # noqa
+from transformers import pipeline  # noqa
 
 
 # --- ここに追加 ---
 @st.cache_resource
 def get_asr_pipe():
-    return pipeline("automatic-speech-recognition", model="openai/whisper-small")
+    return pipeline("automatic-speech-recognition",
+                    model="openai/whisper-small")
 
 
 @st.cache_resource
 def get_chatbot_pipe():
-    return pipeline("text-generation", model="meta-llama/Llama-3.1-8B-Instruct")
+    return pipeline("text-generation",
+                    model="meta-llama/Llama-3.1-8B-Instruct")
 
 
-REGISTER_PATH = r"D:\program\programming\app\detect_techtrain\registered_faces.pkl"
-AUTH_PATH = r"D:\program\programming\app\detect_techtrain\authenticated_user.txt"
+REGISTER_PATH = \
+    r"D:\program\programming\app\detect_techtrain\registered_faces.pkl"
+AUTH_PATH = \
+    r"D:\program\programming\app\detect_techtrain\authenticated_user.txt"
 
 
 # --- 終了時に認証ファイルを削除する ---
@@ -81,8 +85,11 @@ def save_authenticated_user(user, score):
 
 
 def load_authenticated_user():
-    if "authenticated_user" in st.session_state and "authenticated_score" in st.session_state:
-        return st.session_state["authenticated_user"], st.session_state["authenticated_score"]
+    if (
+        "authenticated_user" in st.session_state and
+        "authenticated_score" in st.session_state
+    ):
+        return st.session_state["authenticated_user"], st.session_state["authenticated_score"]  # noqa
     if os.path.exists(AUTH_PATH):
         with open(AUTH_PATH, encoding="utf-8") as f:
             line = f.read().strip()
@@ -129,16 +136,20 @@ if st.button("カメラで顔認証を開始"):
         faces = app.get(frame)
         for idx, face in enumerate(faces):
             box = face.bbox.astype(int)
-            cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), 2)
+            cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), 2)  # noqa
             cv2.putText(frame, f"ID:{idx}", (box[0], box[1]-30),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
             if registered_faces:
                 sims = {
-                    name: cosine_similarity(face.embedding, get_mean_embedding(emb_list))
+                    name: cosine_similarity(face.embedding,
+                                            get_mean_embedding(emb_list))
                     for name, emb_list in registered_faces.items()
                 }
                 best_name, best_sim = max(sims.items(), key=lambda x: x[1])
-                label = f"{best_name} ({best_sim:.2f})" if best_sim > 0.5 else "認証NG"
+
+                label = f"{best_name} ({best_sim:.2f})" if best_sim > 0.5\
+                    else "認証NG"
+
                 color = (0, 255, 0) if best_sim > 0.5 else (0, 0, 255)
                 cv2.putText(frame, label, (box[0], box[1]-10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
@@ -171,7 +182,8 @@ if st.button("カメラで顔認証を開始"):
         save_authenticated_user(authenticated_user, authenticated_score)
         st.session_state["authenticated_user"] = authenticated_user
         st.session_state["authenticated_score"] = authenticated_score
-        st.success(f"認証成功: {authenticated_user}（スコア: {authenticated_score:.2f}）")
+        st.success(f"認証成功: {authenticated_user}"
+                   f"（スコア: {authenticated_score:.2f}）")
     else:
         st.warning("認証に失敗しました。")
 
@@ -180,7 +192,10 @@ user, score = load_authenticated_user()
 if user and score >= 0.8:
     st.success(f"認証成功: {user}（スコア: {score:.2f}）")
     st.header("音声→テキスト変換")
-    audio_file = st.file_uploader("音声ファイルをアップロードしてください", type=["wav", "mp3", "m4a"])  # m4aを追加
+
+    audio_file = st.file_uploader("音声ファイルをアップロードしてください",
+                                  type=["wav", "mp3", "m4a"])  # m4aを追加
+
     if audio_file:
         with open("temp_audio.wav", "wb") as f:
             f.write(audio_file.read())
@@ -210,7 +225,9 @@ if user and score >= 0.8:
             # M4A→WAV変換
             audio = AudioSegment.from_file("temp_audio.wav", format="m4a")
             audio.export("temp_audio_converted.wav", format="wav")
-            cut_wav("temp_audio_converted.wav", "temp_audio_cut.wav", max_sec=60)
+            cut_wav("temp_audio_converted.wav",
+                    "temp_audio_cut.wav", max_sec=60)
+
             audio_path = "temp_audio_cut.wav"
         else:
             audio_path = "temp_audio.wav"
@@ -235,7 +252,7 @@ if user and score >= 0.8:
         )
         # アシスタントの返答だけ表示
         for msg in chat_result[0]["generated_text"]:
-            if msg["role"] == "assistant":  
+            if msg["role"] == "assistant":
                 st.write("チャットボットの返答:", msg["content"])
         atexit.register(reset_authenticated_user)
 else:
