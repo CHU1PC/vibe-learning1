@@ -17,6 +17,7 @@ import logging  # noqa
 logging.getLogger("streamlit").setLevel(logging.ERROR)
 logging.getLogger("torch").setLevel(logging.ERROR)
 import cv2  # noqa
+import easyocr  # noqa
 import insightface  # noqa
 import numpy as np  # noqa
 import streamlit as st  # noqa
@@ -35,6 +36,12 @@ def get_asr_pipe():
 def get_chatbot_pipe():
     return pipeline("text-generation",
                     model="meta-llama/Llama-3.1-8B-Instruct")
+
+
+# --- テキスト検出モデルのロード ---
+@st.cache_resource
+def get_easyocr_reader():
+    return easyocr.Reader(['ja', 'en'])
 
 
 REGISTER_PATH = \
@@ -191,6 +198,50 @@ if st.button("カメラで顔認証を開始"):
 user, score = load_authenticated_user()
 if user and score >= 0.8:
     st.success(f"認証成功: {user}（スコア: {score:.2f}）")
+
+    st.header("テキスト検出（EasyOCR）")
+
+    uploaded_img = st.file_uploader("画像をアップロードしてください",
+                                    type=["jpg", "jpeg", "png"],
+                                    key="ocr_easy")
+    if uploaded_img:
+        img_array = np.frombuffer(uploaded_img.read(), np.uint8)
+        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+        st.image(img, caption="アップロード画像", channels="BGR")
+
+        reader = get_easyocr_reader()
+        easyocr_result = reader.readtext(img)
+        easyocr_texts = [text for _, text, _ in easyocr_result]
+        st.write("EasyOCR検出結果:", easyocr_texts)
+
+        # 画像への描画
+        for bbox, text, conf in easyocr_result:
+            pts = np.array(bbox, dtype=np.int32)
+            cv2.polylines(img, [pts], isClosed=True,
+                          color=(0, 255, 0), thickness=2)
+            cv2.putText(img, text, tuple(pts[0]), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8, (0, 0, 255), 2)
+        st.image(img, caption="EasyOCR検出範囲", channels="BGR")
+
+        chatbot_pipe = get_chatbot_pipe()
+        input_text = "\n".join(easyocr_texts)
+        messages = [
+            {"role": "user", "content": input_text},
+        ]
+        # max_new_tokensを増やす（例: 256や512など必要に応じて調整）
+        chat_result = chatbot_pipe(
+            messages,
+            max_new_tokens=512,   # ここを追加
+            do_sample=True,       # サンプリング有効化（任意）
+            temperature=0.7       # 生成の多様性（任意）
+        )
+        # アシスタントの返答だけ表示
+        for msg in chat_result[0]["generated_text"]:
+            if msg["role"] == "assistant":
+                st.write("チャットボットの返答:", msg["content"])
+        atexit.register(reset_authenticated_user)
+
+#
     st.header("音声→テキスト変換")
 
     audio_file = st.file_uploader("音声ファイルをアップロードしてください",
