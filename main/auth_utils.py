@@ -7,9 +7,11 @@ import streamlit as st
 REGISTER_PATH = r"D:\program\programming\app\detect_techtrain\registered_faces.pkl"
 AUTH_PATH = r"D:\program\programming\app\detect_techtrain\authenticated_user.txt"
 
+
 def reset_authenticated_user():
     if os.path.exists(AUTH_PATH):
         os.remove(AUTH_PATH)
+
 
 def register_face(name, embedding):
     faces = load_registered_faces()
@@ -20,8 +22,10 @@ def register_face(name, embedding):
     with open(REGISTER_PATH, "wb") as f:
         pickle.dump(faces, f)
 
+
 def get_mean_embedding(emb_list):
     return np.mean(emb_list, axis=0)
+
 
 def load_registered_faces():
     if os.path.exists(REGISTER_PATH):
@@ -33,12 +37,15 @@ def load_registered_faces():
         return faces
     return {}
 
+
 def cosine_similarity(a, b):
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+
 
 def save_authenticated_user(user, score):
     with open(AUTH_PATH, "w", encoding="utf-8") as f:
         f.write(f"{user},{score}")
+
 
 def load_authenticated_user():
     if (

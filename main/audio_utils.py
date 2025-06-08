@@ -23,6 +23,7 @@ def cut_wav(input_path, output_path, max_sec=60):
             out_wf.setframerate(framerate)
             out_wf.writeframes(frames)
 
+
 def convert_and_cut_audio(input_file_path, output_cut_path, max_sec=60):
     """
     各種音声ファイルをWAVに変換し、指定された秒数でカットします。
