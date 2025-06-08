@@ -8,20 +8,21 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
-import logging
+import logging  # noqa
 
 logging.getLogger("streamlit").setLevel(logging.ERROR)
 logging.getLogger("torch").setLevel(logging.ERROR)
-import cv2
-import numpy as np
-import streamlit as st
-from audio_utils import convert_and_cut_audio, cut_wav  # 新しい関数も追加
-from auth_utils import (cosine_similarity, get_mean_embedding,
+import cv2  # noqa
+import numpy as np  # noqa
+import streamlit as st  # noqa
+from audio_utils import convert_and_cut_audio, cut_wav  # noqa  # 新しい関数も追加
+from auth_utils import save_authenticated_user  # noqa
+from auth_utils import (cosine_similarity, get_mean_embedding,  # noqa
                         load_authenticated_user, load_registered_faces,
-                        register_face, reset_authenticated_user,
-                        save_authenticated_user)
+                        register_face, reset_authenticated_user)
 # 各モジュールから必要な関数をインポート
-from model_loaders import get_asr_pipe, get_chatbot_pipe, get_easyocr_reader
+from model_loaders import (get_asr_pipe, get_chatbot_pipe,  # noqa
+                           get_easyocr_reader)
 
 # --- 終了時に認証ファイルを削除するハンドラを登録 ---
 atexit.register(reset_authenticated_user)
@@ -62,12 +63,14 @@ if st.button("カメラで顔認証を開始"):
         faces = app.get(frame)
         for idx, face in enumerate(faces):
             box = face.bbox.astype(int)
-            cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), 2)
+            cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]),
+                          (0, 255, 0), 2)
             cv2.putText(frame, f"ID:{idx}", (box[0], box[1]-30),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
             if registered_faces:
                 sims = {
-                    name: cosine_similarity(face.embedding, get_mean_embedding(emb_list))  # ← ここを修正
+                    name: cosine_similarity(face.embedding,
+                                            get_mean_embedding(emb_list))
                     for name, emb_list in registered_faces.items()
                 }
                 best_name, best_sim = max(sims.items(), key=lambda x: x[1])
@@ -121,8 +124,8 @@ if user and score >= 0.8:
     st.header("テキスト検出（EasyOCR）")
 
     uploaded_img = st.file_uploader("画像をアップロードしてください",
-                                     type=["jpg", "jpeg", "png"],
-                                     key="ocr_easy")
+                                    type=["jpg", "jpeg", "png"],
+                                    key="ocr_easy")
     if uploaded_img:
         img_array = np.frombuffer(uploaded_img.read(), np.uint8)
         img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
@@ -161,17 +164,20 @@ if user and score >= 0.8:
     st.header("音声→テキスト変換")
 
     audio_file = st.file_uploader("音声ファイルをアップロードしてください",
-                                     type=["wav", "mp3", "m4a"])
+                                  type=["wav", "mp3", "m4a"])
 
     if audio_file:
         # アップロードされたファイルを一時的に保存
-        temp_audio_path = "temp_uploaded_audio" + os.path.splitext(audio_file.name)[-1]
+        temp_audio_path = "temp_uploaded_audio" +\
+            os.path.splitext(audio_file.name)[-1]
         with open(temp_audio_path, "wb") as f:
             f.write(audio_file.read())
 
         processed_audio_path = "temp_audio_cut.wav"
         try:
-            convert_and_cut_audio(temp_audio_path, processed_audio_path, max_sec=60)
+            convert_and_cut_audio(temp_audio_path,
+                                  processed_audio_path, max_sec=60)
+
             result = asr_pipe(processed_audio_path, return_timestamps=True)
             text = result["text"]
             st.write("音声認識結果:", text)
