@@ -17,9 +17,10 @@ import numpy as np  # noqa
 import streamlit as st  # noqa
 from audio_utils import convert_and_cut_audio, cut_wav  # noqa  # 新しい関数も追加
 from auth_utils import save_authenticated_user  # noqa
-from auth_utils import (cosine_similarity, get_mean_embedding,  # noqa
-                        load_authenticated_user, load_registered_faces,
-                        register_face, reset_authenticated_user)
+from auth_utils import (cosine_similarity, get_available_cameras,  # noqa
+                        get_mean_embedding, load_authenticated_user,
+                        load_registered_faces, register_face,
+                        reset_authenticated_user)
 # 各モジュールから必要な関数をインポート
 from model_loaders import (get_asr_pipe, get_chatbot_pipe,  # noqa
                            get_easyocr_reader)
@@ -47,6 +48,12 @@ st.header("顔認証")
 if st.button("カメラで顔認証を開始"):
     import insightface  # ここでインポートすることで、必要な時にだけロード
 
+    camera_indices = get_available_cameras()
+    if not camera_indices:
+        st.error("利用可能なカメラが見つかりません。")
+        st.stop()
+    cam_idx = 0
+    cap = cv2.VideoCapture(camera_indices[cam_idx])
     app = insightface.app.FaceAnalysis()
     app.prepare(ctx_id=0, det_size=(640, 640))
     cap = cv2.VideoCapture(0)
@@ -91,6 +98,14 @@ if st.button("カメラで顔認証を開始"):
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
             break
+        elif key == ord('c'):
+            cap.release()
+            cam_idx = (cam_idx + 1) % len(camera_indices)
+            cap = cv2.VideoCapture(camera_indices[cam_idx])
+            # 切り替え直後のフレームを1回捨てる
+            for _ in range(3):
+                cap.read()
+
         elif key == ord('s') and faces:
             for idx, face in enumerate(faces):
                 print(f"ID:{idx} 座標:{face.bbox.astype(int)}")
@@ -100,10 +115,11 @@ if st.button("カメラで顔認証を開始"):
                     name = input("登録する名前を入力してください: ")
                     register_face(name, faces[select].embedding)
                     registered_faces = load_registered_faces()
+                    print(f"{name} を登録しました")
                 else:
                     print("無効なIDです。")
-            except Exception:
-                print("IDの入力が正しくありません。")
+            except Exception as e:
+                print(e)
     cap.release()
     cv2.destroyAllWindows()
     if authenticated_user and authenticated_score >= 0.8:

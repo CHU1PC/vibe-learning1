@@ -1,11 +1,14 @@
 import os
 import pickle
 
+import cv2
 import numpy as np
 import streamlit as st
 
-REGISTER_PATH = r"D:\program\programming\app\detect_techtrain\registered_faces.pkl"
-AUTH_PATH = r"D:\program\programming\app\detect_techtrain\authenticated_user.txt"
+REGISTER_PATH = r"D:\program\programming\app\detect_techtrain"\
+                r"\vibe-learning1\main\registered_faces.pkl"
+AUTH_PATH = r"D:\program\programming\app\detect_techtrain\vibe-learning1"\
+            r"\main\authenticated_user.txt"
 
 
 def reset_authenticated_user():
@@ -52,7 +55,9 @@ def load_authenticated_user():
         "authenticated_user" in st.session_state and
         "authenticated_score" in st.session_state
     ):
-        return st.session_state["authenticated_user"], st.session_state["authenticated_score"]
+        return (st.session_state["authenticated_user"],
+                st.session_state["authenticated_score"])
+
     if os.path.exists(AUTH_PATH):
         with open(AUTH_PATH, encoding="utf-8") as f:
             line = f.read().strip()
@@ -62,3 +67,14 @@ def load_authenticated_user():
                 st.session_state["authenticated_score"] = float(score)
                 return user, float(score)
     return None, 0.0
+
+
+# 利用可能なカメラを検出
+def get_available_cameras(max_test=5):
+    available = []
+    for i in range(max_test):
+        cap = cv2.VideoCapture(i)
+        if cap.isOpened():
+            available.append(i)
+            cap.release()
+    return available
