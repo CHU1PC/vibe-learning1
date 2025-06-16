@@ -201,7 +201,7 @@ if user and score >= 0.8:
         ]
         chat_result = chatbot_pipe(
             messages,
-            max_new_tokens=512,
+            max_new_tokens=32,
             do_sample=True,
             temperature=0.7
         )
@@ -238,7 +238,7 @@ if user and score >= 0.8:
             ]
             chat_result = chatbot_pipe(
                 messages,
-                max_new_tokens=512,
+                max_new_tokens=32,
                 do_sample=True,
                 temperature=0.7
             )
