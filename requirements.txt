@@ -1,0 +1,12 @@
+streamlit==1.44.1
+numpy==1.26.4
+opencv-python-headless==4.11.0.86
+torch==2.7.0+cu128
+torchvision==0.22.0+cu128
+torchaudio==2.7.0+cu128
+transformers==4.51.3
+sentencepiece==0.2.0
+accelerate==1.6.0
+insightface==0.7.3 # insightfaceのバージョンと、onnxruntimeも必要なら記述
+easyocr==1.7.2
+pydub==0.25.1 # audio_utils で使
