@@ -248,7 +248,6 @@ if user and score >= 0.8:
         except ValueError as e:
             st.error(f"音声ファイルの処理エラー: {e}")
         finally:
-            # 一時ファイルをクリーンアップ
             if os.path.exists(temp_audio_path):
                 os.remove(temp_audio_path)
             if os.path.exists(processed_audio_path):
