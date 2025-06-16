@@ -1,12 +1,26 @@
 streamlit==1.44.1
 numpy==1.26.4
 opencv-python-headless==4.11.0.86
+# PyTorch (torch, torchvision, torchaudio) のバージョンについて:
+# 現在CUDA 12.8 (cu128) を指定していますが、Streamlit Community Cloudなどの
+# 無料ホスティング環境はCPUのみの場合が多いです。
+# CPU環境にデプロイする場合は、CPU版を指定する必要があります。
+# 例:
+# torch==2.3.0 --index-url https://download.pytorch.org/whl/cpu
+# torchvision==0.18.0 --index-url https://download.pytorch.org/whl/cpu
+# torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cpu
+# (バージョンはPyTorch公式サイトで確認してください)
+# 以下は現在のCUDA指定のまま残します。デプロイ環境に合わせて変更してください。
 torch==2.7.0+cu128
 torchvision==0.22.0+cu128
 torchaudio==2.7.0+cu128
 transformers==4.51.3
 sentencepiece==0.2.0
-accelerate==1.6.0
-insightface==0.7.3 # insightfaceのバージョンと、onnxruntimeも必要なら記述
+accelerate==1.6.0 # transformersの高速化に役立つ
+insightface==0.7.3
+onnxruntime # insightface (CPU実行時) のために追加
+pandas # CSVファイルの読み書きやデータ操作のために追加
 easyocr==1.7.2
-pydub==0.25.1 # audio_utils で使
+pydub==0.25.1 # audio_utils で使用
+# Pillow # easyocr や torchvision が内部で使用することが多いですが、通常は自動で依存解決されます。
+# scikit-learn # もし cosine_similarity などで sklearn を使っている場合は追加
