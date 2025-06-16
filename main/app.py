@@ -1,14 +1,6 @@
 import atexit
-import os
-import warnings
-
-warnings.filterwarnings("ignore")
-
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "1"
-os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-
 import logging  # noqa
+import os
 
 logging.getLogger("streamlit").setLevel(logging.ERROR)
 logging.getLogger("torch").setLevel(logging.ERROR)
@@ -60,7 +52,8 @@ if st.button("カメラで顔認証を開始/停止"):
     if st.session_state.camera_active and st.session_state.face_app is None:
         import insightface  # ここでインポート
         try:
-            app = insightface.app.FaceAnalysis(providers=['CPUExecutionProvider']) # CPUを指定
+            app = insightface.app.FaceAnalysis(
+                providers=['CPUExecutionProvider'])  # CPUを指定
             app.prepare(ctx_id=-1, det_size=(640, 640))  # ctx_id=-1 for CPU
             st.session_state.face_app = app
             st.info("顔認証カメラを起動しました。下の画像フレームに顔を写してください。")
@@ -76,47 +69,62 @@ if st.session_state.camera_active and st.session_state.face_app:
 
     if img_file_buffer is not None:
         bytes_data = img_file_buffer.getvalue()
-        cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
+        cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8),
+                               cv2.IMREAD_COLOR)
 
         app = st.session_state.face_app  # セッションからappを取得
         registered_faces = st.session_state.registered_faces  # セッションから登録顔情報を取得
 
         faces = app.get(cv2_img)
-        processed_img = cv2_img.copy() # 描画用のコピーを作成
+        processed_img = cv2_img.copy()  # 描画用のコピーを作成
 
         current_best_sim = 0.0
         current_best_name = None
 
         for idx, face in enumerate(faces):
             box = face.bbox.astype(int)
-            cv2.rectangle(processed_img, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), 2)
-            # cv2.putText(processed_img, f"ID:{idx}", (box[0], box[1]-30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2) # ID表示は登録時に
+            cv2.rectangle(processed_img,
+                          (box[0], box[1]),
+                          (box[2], box[3]),
+                          (0, 255, 0),
+                          2)
 
             if registered_faces:
                 sims = {
-                    name: cosine_similarity(face.embedding, get_mean_embedding(emb_list))
+                    name: cosine_similarity(face.embedding,
+                                            get_mean_embedding(emb_list))
                     for name, emb_list in registered_faces.items()
                 }
                 if sims:  # simsが空でないことを確認
-                    best_name_local, best_sim_local = max(sims.items(), key=lambda x: x[1])
-                    label = f"{best_name_local} ({best_sim_local:.2f})" if best_sim_local > 0.5 else "認証NG"
-                    color = (0, 255, 0) if best_sim_local > 0.5 else (0, 0, 255)
-                    cv2.putText(processed_img, label, (box[0], box[1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+                    best_name_local, best_sim_local = \
+                        max(sims.items(), key=lambda x: x[1])
+                    label = f"{best_name_local} ({best_sim_local:.2f})" \
+                        if best_sim_local > 0.5 else "認証NG"
+
+                    color = (0, 255, 0) if best_sim_local > 0.5\
+                        else (0, 0, 255)
+                    cv2.putText(processed_img, label,
+                                (box[0], box[1]-10),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.8, color, 2)
                     if best_sim_local > current_best_sim:  # このフレームでの最高類似度を更新
                         current_best_sim = best_sim_local
                         current_best_name = best_name_local
             else:
-                cv2.putText(processed_img, "未登録", (box[0], box[1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0), 2)
+                cv2.putText(processed_img, "未登録", (box[0], box[1]-10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0), 2)
 
         st.image(processed_img, channels="BGR", caption="認証中...")
 
         # 認証ボタン (十分な類似度の場合のみ表示)
         if current_best_name and current_best_sim >= 0.8:  # 閾値は適宜調整
-            if st.button(f"{current_best_name}として認証する (スコア: {current_best_sim:.2f})", key="confirm_auth"):
+            if st.button(f"{current_best_name}として認証する "
+                         f"(スコア: {current_best_sim:.2f})", key="confirm_auth"):
                 save_authenticated_user(current_best_name, current_best_sim)
                 st.session_state["authenticated_user"] = current_best_name
                 st.session_state["authenticated_score"] = current_best_sim
-                st.success(f"認証成功: {current_best_name}（スコア: {current_best_sim:.2f}）")
+                st.success(f"認証成功: {current_best_name}"
+                           f"（スコア: {current_best_sim:.2f}）")
                 st.session_state.camera_active = False  # 認証成功したらカメラをオフ
                 st.rerun()  # 画面を再描画して認証後の状態を表示
 
@@ -127,15 +135,26 @@ if st.session_state.camera_active and st.session_state.face_app:
             if not face_options:
                 st.write("登録対象の顔が検出されていません。")
             else:
-                selected_face_idx_str = st.selectbox("登録する顔を選択:", face_options, key="face_select")
-                if selected_face_idx_str:  # ユーザーが何かを選択した場合
-                    selected_face_idx = int(selected_face_idx_str.split(" ")[-1])  # "検出された顔 0" -> 0
+                selected_face_idx_str = st.selectbox("登録する顔を選択:",
+                                                     face_options,
+                                                     key="face_select")
 
-                    registration_name = st.text_input("登録名を入力してください:", key="reg_name")
+                if selected_face_idx_str:  # ユーザーが何かを選択した場合
+                    selected_face_idx = \
+                        int(selected_face_idx_str.split(" ")[-1])
+
+                    registration_name = st.text_input("登録名を入力してください:",
+                                                      key="reg_name")
                     if st.button("この顔を登録", key="register_btn"):
-                        if registration_name and 0 <= selected_face_idx < len(faces):
-                            register_face(registration_name, faces[selected_face_idx].embedding)
-                            st.session_state.registered_faces = load_registered_faces()  # 登録情報を更新
+                        if (
+                            registration_name and
+                            0 <= selected_face_idx < len(faces)
+                        ):
+
+                            register_face(registration_name,
+                                          faces[selected_face_idx].embedding)
+                            st.session_state.registered_faces = \
+                                load_registered_faces()  # 登録情報を更新
                             st.success(f"{registration_name} さんを登録しました。")
                             # 登録後に入力フィールドをクリアするために工夫が必要な場合がある
                         elif not registration_name:

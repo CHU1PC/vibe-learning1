@@ -5,10 +5,10 @@ import cv2
 import numpy as np
 import streamlit as st
 
-REGISTER_PATH = r"D:\program\programming\app\detect_techtrain"\
-                r"\vibe-learning1\main\registered_faces.pkl"
-AUTH_PATH = r"D:\program\programming\app\detect_techtrain\vibe-learning1"\
-            r"\main\authenticated_user.txt"
+REGISTER_PATH = os.path.join(os.path.dirname(__file__) +
+                             "/registered_faces.pkl")
+AUTH_PATH = os.path.join(os.path.dirname(__file__) +
+                         "/authenticated_user.txt")
 
 
 def reset_authenticated_user():
